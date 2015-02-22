@@ -1,0 +1,85 @@
+---
+title: "Exercise Data"
+output: html_document
+---
+
+The data used in this fit only included the time averaged data for each window, since these contained overall features of the time varying data. All of these features were then investigated to show how the class of exercise depended on each of these by investigating the correlation between each of the variables and the class of exercise. This cut the number of features to 58, which was still relatively high, so the model used was the random forest method. This was used with no pre-processing, since this gave the highest accuracy against the data. This was cross-validated using repeated k-fold cross validation with k=10. The function used to train the data was
+
+```
+ modFit<-train(classe~.,data=training,method="rf",tuneGrid=expand.grid(mtry=5, ntree=500), trControl = trainControl(method = "repeatedcv",number=10,repeats=3))
+```
+
+
+The tuning of the parameters for 'rf' was found to converge on accuracy with the training set at mtry=5 (see plot below) and ntrees=500, where mtry is the number of variables randomly sampled as candidates at each split and ntrees is the number of trees to grow. 
+
+```{r, echo=FALSE}
+mtry=c(2,3,4,5,6,7,8,9,10,11,12,13,20,30,40,50,58)
+accuracy=c(0.8791482,0.8847375,0.8851897,0.8891076,0.8847228,0.8863295,0.8847513,0.881553,0.8815384,0.8795873,0.8776029,0.8747917,0.8672327,0.8592908, 0.8536778,0.845731,0.8453343)
+plot(mtry,accuracy,type="l",main="How accuracy depends on value of mtry")
+```
+
+The final confusion matrix and accuracy for the data set using these optimum values were for all samples
+
+```
+    Accuracy     Kappa    Resample
+1  0.9166667 0.8942826 Fold01.Rep1
+2  0.9156627 0.8932378 Fold02.Rep1
+3  0.9294118 0.9103376 Fold03.Rep1
+4  0.8571429 0.8194842 Fold04.Rep1
+5  0.8690476 0.8333333 Fold05.Rep1
+6  0.8690476 0.8333333 Fold06.Rep1
+7  0.9166667 0.8942256 Fold07.Rep1
+8  0.9036145 0.8775134 Fold08.Rep1
+9  0.8470588 0.8066830 Fold09.Rep1
+10 0.8795181 0.8469200 Fold10.Rep1
+11 0.8915663 0.8621262 Fold01.Rep2
+12 0.8928571 0.8637592 Fold02.Rep2
+13 0.8554217 0.8158625 Fold03.Rep2
+14 0.9058824 0.8811397 Fold04.Rep2
+15 0.9285714 0.9090088 Fold05.Rep2
+16 0.9294118 0.9105577 Fold06.Rep2
+17 0.8192771 0.7715177 Fold07.Rep2
+18 0.8690476 0.8336035 Fold08.Rep2
+19 0.9285714 0.9095802 Fold09.Rep2
+20 0.8571429 0.8203849 Fold10.Rep2
+21 0.8690476 0.8336035 Fold01.Rep3
+22 0.9166667 0.8940541 Fold02.Rep3
+23 0.8928571 0.8646132 Fold03.Rep3
+24 0.9166667 0.8938245 Fold04.Rep3
+25 0.8780488 0.8442545 Fold05.Rep3
+26 0.8928571 0.8638083 Fold06.Rep3
+27 0.8452381 0.8041958 Fold07.Rep3
+28 0.8928571 0.8638329 Fold08.Rep3
+29 0.8928571 0.8637592 Fold09.Rep3
+30 0.8941176 0.8667015 Fold10.Rep3
+```
+
+And averaged over all samples
+```
+  Accuracy   Kappa     Accuracy SD  Kappa SD  
+  0.8890934  0.859318  0.02892983   0.03655547
+  
+  
+  Confusion Matrix
+ 
+ (entries are percentages of table totals)
+ 
+          Reference
+Prediction    A    B    C    D    E
+         A 27.4  2.5  0.2  0.4  0.1
+         B  0.4 15.6  1.6  0.0  0.3
+         C  0.5  0.2 14.8  1.6  0.8
+         D  0.4  0.5  0.6 14.2  0.4
+         E  0.0  0.4  0.1  0.2 17.0
+
+Class  % predicted   % true   Precision
+A           31.5      28.6      0.87
+B           17.9      19.2      0.87
+C           17.9      17.3      0.86
+D           16.1      16.3      0.88
+E           17.7      18.6      0.96
+
+```
+From my results I would expect to correctly predict the class of exercise in 88.9+-0.3% of cases, giving a predicted out of sample error of 11.1%. This fit would overpredict A and C, while underpredicting B, D and E. 
+
+
